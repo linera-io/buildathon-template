@@ -13,24 +13,22 @@ linera wallet request-chain --faucet="$LINERA_FAUCET_URL"
 # 2) Build contracts to Wasm (if present in /build/contracts)
 if [ -d "/build/contracts" ]; then
   cd /build/contracts
-  # Ensure WASM target is available
   rustup target add wasm32-unknown-unknown || true
-  # Build all contract crates to Wasm, ignore failures to allow frontend-only demos
   cargo build --release --target wasm32-unknown-unknown || true
   cd /build
 fi
 
-# 3) Optionally publish and create application if contract+service are available
-# Set CONTRACT_WASM and SERVICE_WASM to actual paths if you have both
-CONTRACT_WASM=${CONTRACT_WASM:-/build/contracts/target/wasm32-unknown-unknown/release/app_contract.wasm}
-SERVICE_WASM=${SERVICE_WASM:-/build/contracts/target/wasm32-unknown-unknown/release/app_service.wasm}
+# 3) Publish and create application for hello-contract if available
+HELLO_CONTRACT_WASM=/build/contracts/hello/target/wasm32-unknown-unknown/release/hello_contract.wasm
+HELLO_SERVICE_WASM=/build/contracts/hello-service/target/wasm32-unknown-unknown/release/hello_service.wasm
 
-if [ -f "$CONTRACT_WASM" ] && [ -f "$SERVICE_WASM" ]; then
-  BYTECODE_ID=$(linera publish-bytecode "$CONTRACT_WASM" "$SERVICE_WASM")
-  # Provide a minimal JSON argument; adjust to your app
+if [ -f "$HELLO_CONTRACT_WASM" ] && [ -f "$HELLO_SERVICE_WASM" ]; then
+  BYTECODE_ID=$(linera publish-bytecode "$HELLO_CONTRACT_WASM" "$HELLO_SERVICE_WASM")
   APP_ID=$(linera create-application "$BYTECODE_ID" --json-argument "null")
-  echo "Published bytecode: $BYTECODE_ID"
-  echo "Created application: $APP_ID"
+  echo "Published hello bytecode: $BYTECODE_ID"
+  echo "Created hello application: $APP_ID"
+else
+  echo "Hello contract/service Wasm not found; skipping publish/create."
 fi
 
 # 4) Start the wallet node service (GraphQL)
