@@ -7,4 +7,17 @@ services:
     - "9001:9001" # shard proxy
     - "13001:13001" # shard
     volumes:
-    - .:/build
+    - ..:/build
+  backend:
+    image: node:20
+    working_dir: /app
+    command: sh -c "npm install && node server.js"
+    environment:
+      - NODE_ENV=development
+      - LINERA_GRAPHQL_URL=http://host.docker.internal:8080/graphql
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../backend:/app
+    depends_on:
+      - app
